@@ -1,0 +1,9 @@
+# Dot dirs:
+.idea/
+.vscode/
+
+# Dirs
+vendor/
+
+# Files:
+
