@@ -15,10 +15,7 @@ import (
 )
 
 func init() {
-	err := osenv.LoadFile("./conf/conf.default.env")
-	checkError(err)
-
-	fmt.Println(osenv.String("DB_MYSQL_USERNAME"))
+	fatalIfErrorOccurred(osenv.LoadFile("./conf/conf.default.env"))
 }
 
 func main() {
@@ -26,52 +23,62 @@ func main() {
 	_ = m.Run()
 }
 
+// Sets definition.
 var (
-	MainSet = wire.NewSet(NewApp, NewMySQLConnection, NewRoutingFn)
-	KitSet  = wire.NewSet(server.NewServer)
+	AppSet = wire.NewSet(NewApp, NewMySQLConn, NewRoutingFn)
+	KitSet = wire.NewSet(server.NewServer)
 )
 
-func NewApp(
-	db *gorm.DB,
-	server *server.Server,
-) *App {
+// NewApp returns a new instance of App.
+func NewApp(server *server.Server) *App {
 	return &App{
-		DB:     db,
 		Server: server,
 	}
 }
 
+// App is main application.
 type App struct {
-	DB     *gorm.DB
 	Server *server.Server
 }
 
+// Run starts application.
 func (_this *App) Run() error {
 	return _this.Server.Start()
 }
 
-func NewMySQLConnection() *gorm.DB {
-	db, err := gorm.Open("mysql", "root:root@tcp(localhost:3306)/terrorblade")
-	checkError(err)
+// NewMySQLConn return *gorm.DB.
+func NewMySQLConn() *gorm.DB {
+	db, err := gorm.Open("mysql", fmt.Sprintf(
+		"%v:%v@tcp(%v:%v)/%v",
+		osenv.String("DB_MYSQL_USERNAME"),
+		osenv.String("DB_MYSQL_PASSWORD"),
+		osenv.String("DB_MYSQL_HOST"),
+		osenv.Int("DB_MYSQL_PORT"),
+		osenv.String("DB_MYSQL_DATABASE"),
+	))
+	fatalIfErrorOccurred(err)
 	return db
 }
 
-func NewRoutingFn(userHandler *handlers.UserHandler) server.RoutingFn {
+// NewRoutingFn returns routers.
+func NewRoutingFn(h *handlers.Handlers) server.RoutingFn {
 	return func(router *echo.Echo) {
-		v1 := router.Group("/api/v1")
+		v1 := router.Group("/terrorblade/v1")
+		v1.GET("/health-check", h.HealthCheck.Check())
 
-		user := v1.Group("/users")
+		users := v1.Group("/users")
 		{
-			// user.POST("/", func(c echo.Context) error {
-			// 	return c.JSON(200, map[string]interface{}{"Status": "OK"})
-			// })
-			user.POST("/", userHandler.CreateUser())
-			user.GET("/:id", userHandler.GetUser())
+			users.POST("/", h.User.CreateUser())
+			users.GET("/:id", h.User.GetUser())
+		}
+
+		router.HTTPErrorHandler = func(err error, c echo.Context) {
+
 		}
 	}
 }
 
-func checkError(err error) {
+func fatalIfErrorOccurred(err error) {
 	if err != nil {
 		log.Fatalf("An error occurred: %v", err)
 	}

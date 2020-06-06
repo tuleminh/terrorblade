@@ -6,8 +6,9 @@
 package main
 
 import (
-	"terrorblade/cmd/terrorbladed/internal/handlers"
+	handlers2 "terrorblade/cmd/terrorbladed/internal/handlers"
 	"terrorblade/cmd/terrorbladed/internal/services"
+	"terrorblade/handlers"
 	"terrorblade/kit/server"
 	"terrorblade/repositories"
 )
@@ -19,12 +20,14 @@ import (
 // Injectors from wire.go:
 
 func InitializeMain() *App {
-	db := NewMySQLConnection()
+	healthCheckHandler := handlers.NewHealthCheckHandler()
+	db := NewMySQLConn()
 	userRepository := repositories.NewUserRepository()
 	userService := services.NewUserService(db, userRepository)
-	userHandler := handlers.NewUserHandler(userService)
-	routingFn := NewRoutingFn(userHandler)
+	userHandler := handlers2.NewUserHandler(userService)
+	handlersHandlers := handlers2.NewHandlers(healthCheckHandler, userHandler)
+	routingFn := NewRoutingFn(handlersHandlers)
 	serverServer := server.NewServer(routingFn)
-	app := NewApp(db, serverServer)
+	app := NewApp(serverServer)
 	return app
 }

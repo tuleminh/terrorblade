@@ -12,6 +12,6 @@ import (
 
 // InitializeMain returns a new instance of main application.
 func InitializeMain() *App {
-	wire.Build(MainSet, KitSet, handlers.HandlerSet, services.ServiceSet, repositories.RepositorySet)
+	wire.Build(AppSet, KitSet, handlers.HandlerSet, services.ServiceSet, repositories.RepositorySet)
 	return &App{}
 }

@@ -11,24 +11,19 @@ import (
 	_baseDTOs "terrorblade/dtos"
 )
 
-func NewUserService(db *gorm.DB, userRepository terrorblade.UserRepository) UserService {
-	return &userService{
+func NewUserService(db *gorm.DB, userRepository terrorblade.UserRepository) *UserService {
+	return &UserService{
 		db:             db,
 		userRepository: userRepository,
 	}
 }
 
-type UserService interface {
-	CreateUser(request *dtos.CreateUserRequest) (*dtos.CreateUserResponse, error)
-	GetUser(id int64) (*dtos.GetUserResponse, error)
-}
-
-type userService struct {
+type UserService struct {
 	db             *gorm.DB
 	userRepository terrorblade.UserRepository
 }
 
-func (_this *userService) CreateUser(request *dtos.CreateUserRequest) (*dtos.CreateUserResponse, error) {
+func (_this *UserService) CreateUser(request *dtos.CreateUserRequest) (*dtos.CreateUserResponse, error) {
 	tx := _this.db.Begin()
 	defer tx.RollbackUnlessCommitted()
 
@@ -56,7 +51,7 @@ func (_this *userService) CreateUser(request *dtos.CreateUserRequest) (*dtos.Cre
 	}, nil
 }
 
-func (_this *userService) GetUser(id int64) (*dtos.GetUserResponse, error) {
+func (_this *UserService) GetUser(id int64) (*dtos.GetUserResponse, error) {
 	user, err := _this.userRepository.GetUser(_this.db, id)
 	if err != nil {
 		return nil, err

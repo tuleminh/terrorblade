@@ -1,5 +1,12 @@
 package repositories
 
-import "github.com/google/wire"
+import (
+	"github.com/google/wire"
 
-var RepositorySet = wire.NewSet(NewUserRepository)
+	"terrorblade"
+)
+
+var RepositorySet = wire.NewSet(
+	NewUserRepository,
+	wire.Bind(new(terrorblade.UserRepository), new(*UserRepository)),
+)

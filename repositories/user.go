@@ -7,18 +7,21 @@ import (
 )
 
 // NewUserRepository returns a new instance of UserRepository.
-func NewUserRepository() terrorblade.UserRepository {
-	return &userRepository{}
+func NewUserRepository() *UserRepository {
+	return &UserRepository{}
 }
 
-type userRepository struct {
+type UserRepository struct {
 }
 
-func (_this *userRepository) CreateUser(db *gorm.DB, user *terrorblade.User) error {
+func (_this *UserRepository) CreateUser(db *gorm.DB, user *terrorblade.User) error {
+	if err := db.Create(user).Error; err != nil {
+		return err
+	}
 	return nil
 }
 
-func (_this *userRepository) GetUser(db *gorm.DB, id int64) (*terrorblade.User, error) {
+func (_this *UserRepository) GetUser(db *gorm.DB, id int64) (*terrorblade.User, error) {
 	var user terrorblade.User
 
 	if err := db.First(&user, "id = ?", id).Error; err != nil {

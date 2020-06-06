@@ -11,7 +11,7 @@ import (
 )
 
 // NewUserHandler returns a new instance of UserHandler.
-func NewUserHandler(userService services.UserService) *UserHandler {
+func NewUserHandler(userService *services.UserService) *UserHandler {
 	return &UserHandler{
 		userService: userService,
 	}
@@ -19,7 +19,7 @@ func NewUserHandler(userService services.UserService) *UserHandler {
 
 // UserHandler provides access to User HTTP handler.
 type UserHandler struct {
-	userService services.UserService
+	userService *services.UserService
 }
 
 // CreateUser inserts a new User.

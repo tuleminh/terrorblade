@@ -6,8 +6,10 @@ type RoutingFn func(router *echo.Echo)
 
 // NewServer returns a new instance of Server.
 func NewServer(routing RoutingFn) *Server {
+	e := echo.New()
+	e.HideBanner = true
 	return &Server{
-		router:  echo.New(),
+		router:  e,
 		routing: routing,
 	}
 }
